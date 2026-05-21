@@ -21,6 +21,7 @@ export interface Artisan {
     longitude: number;
     address: string;
   };
+  profilePhoto: string;
   photos: string[];
   rating: number;
   totalReviews: number;

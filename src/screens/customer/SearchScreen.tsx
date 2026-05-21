@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
@@ -119,8 +120,12 @@ export default function SearchScreen() {
               onPress={() => navigation.navigate('ArtisanDetail', { artisanId: artisan.uid })}
             >
               <View style={styles.artisanAvatar}>
+               {artisan.profilePhoto ? (
+                <Image source={{ uri: artisan.profilePhoto }} style={styles.artisanAvatarImage} />
+               ) : (
                 <Text style={styles.artisanAvatarText}>🔨</Text>
-              </View>
+               )}
+               </View>
               <View style={styles.artisanInfo}>
                 <Text style={styles.artisanName}>{artisan.name}</Text>
                 <Text style={styles.artisanTrade}>{artisan.trade || 'Trade not set'}</Text>
@@ -147,6 +152,11 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
+  artisanAvatarImage: {
+  width: 56,
+  height: 56,
+  borderRadius: 28,
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

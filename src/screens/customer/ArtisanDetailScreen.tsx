@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Linking,
   Alert,
+  Image,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -85,9 +86,13 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
 
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>🔨</Text>
-          </View>
+          {artisan.profilePhoto ? (
+            <Image source={{ uri: artisan.profilePhoto }} style={styles.profilePhoto} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Text style={styles.avatarText}>🔨</Text>
+            </View>
+          )}
           <Text style={styles.name}>{artisan.name}</Text>
           <Text style={styles.trade}>{artisan.trade}</Text>
 
@@ -103,26 +108,21 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <Text style={styles.statValue}>
-                {artisan.available ? '✅' : '❌'}
-              </Text>
-              <Text style={styles.statLabel}>
-                {artisan.available ? 'Available' : 'Busy'}
-              </Text>
+              <Text style={styles.statValue}>{artisan.available ? '✅' : '❌'}</Text>
+              <Text style={styles.statLabel}>{artisan.available ? 'Available' : 'Busy'}</Text>
             </View>
           </View>
         </View>
 
-        {/* Info Cards */}
+        {/* About */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           <View style={styles.card}>
-            <Text style={styles.bio}>
-              {artisan.bio || 'No bio provided yet.'}
-            </Text>
+            <Text style={styles.bio}>{artisan.bio || 'No bio provided yet.'}</Text>
           </View>
         </View>
 
+        {/* Location */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Location</Text>
           <View style={styles.card}>
@@ -131,6 +131,22 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
             </Text>
           </View>
         </View>
+
+        {/* Work Photos */}
+        {artisan.photos && artisan.photos.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Work Photos</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {artisan.photos.map((photo, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: photo }}
+                  style={styles.workPhoto}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Contact Buttons */}
         <View style={styles.section}>
@@ -168,148 +184,63 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    color: COLORS.subtext,
-    fontSize: 16,
-  },
-  backButton: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  backText: {
-    color: COLORS.primary,
-    fontSize: 16,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  errorText: { color: COLORS.subtext, fontSize: 16 },
+  backButton: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 },
+  backText: { color: COLORS.primary, fontSize: 16 },
   profileHeader: {
     alignItems: 'center',
     paddingVertical: 24,
     backgroundColor: COLORS.white,
     marginBottom: 16,
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+  profilePhoto: {
+    width: 100, height: 100, borderRadius: 50,
     marginBottom: 12,
   },
-  avatarText: {
-    fontSize: 40,
+  avatarPlaceholder: {
+    width: 100, height: 100, borderRadius: 50,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: 12,
   },
-  name: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: COLORS.secondary,
-  },
-  trade: {
-    fontSize: 15,
-    color: COLORS.primary,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    marginTop: 20,
-    paddingHorizontal: 24,
-  },
-  stat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.subtext,
-    marginTop: 4,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: COLORS.border,
-  },
-  section: {
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 8,
-  },
+  avatarText: { fontSize: 40 },
+  name: { fontSize: 22, fontWeight: 'bold', color: COLORS.secondary },
+  trade: { fontSize: 15, color: COLORS.primary, fontWeight: '600', marginTop: 4 },
+  statsRow: { flexDirection: 'row', marginTop: 20, paddingHorizontal: 24 },
+  stat: { flex: 1, alignItems: 'center' },
+  statValue: { fontSize: 18, fontWeight: 'bold', color: COLORS.text },
+  statLabel: { fontSize: 12, color: COLORS.subtext, marginTop: 4 },
+  statDivider: { width: 1, backgroundColor: COLORS.border },
+  section: { paddingHorizontal: 24, marginBottom: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text, marginBottom: 8 },
   card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    backgroundColor: COLORS.white, borderRadius: 12,
+    padding: 16, borderWidth: 1, borderColor: COLORS.border,
   },
-  bio: {
-    fontSize: 14,
-    color: COLORS.text,
-    lineHeight: 22,
+  bio: { fontSize: 14, color: COLORS.text, lineHeight: 22 },
+  locationText: { fontSize: 14, color: COLORS.text },
+  workPhoto: {
+    width: 140, height: 100, borderRadius: 12,
+    marginRight: 10,
   },
-  locationText: {
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  contactRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
+  contactRow: { flexDirection: 'row', gap: 12 },
   callButton: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
+    flex: 1, backgroundColor: COLORS.white,
+    borderWidth: 1.5, borderColor: COLORS.primary,
+    borderRadius: 12, padding: 14, alignItems: 'center',
   },
-  callButtonText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    fontSize: 15,
-  },
+  callButtonText: { color: COLORS.primary, fontWeight: '600', fontSize: 15 },
   whatsappButton: {
-    flex: 1,
-    backgroundColor: '#25D366',
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
+    flex: 1, backgroundColor: '#25D366',
+    borderRadius: 12, padding: 14, alignItems: 'center',
   },
-  whatsappButtonText: {
-    color: COLORS.white,
-    fontWeight: '600',
-    fontSize: 15,
-  },
+  whatsappButtonText: { color: COLORS.white, fontWeight: '600', fontSize: 15 },
   bookButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
+    borderRadius: 12, padding: 16, alignItems: 'center',
   },
-  bookButtonDisabled: {
-    backgroundColor: COLORS.border,
-  },
-  bookButtonText: {
-    color: COLORS.white,
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
+  bookButtonDisabled: { backgroundColor: COLORS.border },
+  bookButtonText: { color: COLORS.white, fontWeight: 'bold', fontSize: 16 },
 });

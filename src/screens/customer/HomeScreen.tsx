@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { collection, getDocs, query, limit } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
@@ -132,8 +133,12 @@ export default function HomeScreen() {
           filteredArtisans.map((artisan, index) => (
             <TouchableOpacity key={index} style={styles.artisanCard} onPress={() => navigation.navigate('ArtisanDetail', { artisanId: artisan.uid })}>
               <View style={styles.artisanAvatar}>
+               {artisan.profilePhoto ? (
+                <Image source={{ uri: artisan.profilePhoto }} style={styles.artisanAvatarImage} />
+               ) : (
                 <Text style={styles.artisanAvatarText}>🔨</Text>
-              </View>
+               )}
+             </View>
               <View style={styles.artisanInfo}>
                 <Text style={styles.artisanName}>{artisan.name}</Text>
                 <Text style={styles.artisanTrade}>{artisan.trade || 'Trade not set'}</Text>
@@ -159,6 +164,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  artisanAvatarImage: {
+  width: 56,
+  height: 56,
+  borderRadius: 28,
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

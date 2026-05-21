@@ -21,6 +21,7 @@ import {
 import { auth, db } from '../../services/firebase';
 import { Booking } from '../../types';
 import { COLORS } from '../../constants';
+import { sendLocalNotification } from '../../services/notifications';
 
 export default function ArtisanBookingsScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -88,6 +89,17 @@ export default function ArtisanBookingsScreen() {
         },
       ]
     );
+    if (status === 'accepted') {
+  await sendLocalNotification(
+    'Booking Accepted ✅',
+    `You accepted a booking request. Remember to contact the customer!`
+  );
+} else if (status === 'completed') {
+  await sendLocalNotification(
+    'Job Completed 🎉',
+    'Great work! The job has been marked as completed.'
+  );
+}
   };
 
   const getStatusStyle = (status: string) => {

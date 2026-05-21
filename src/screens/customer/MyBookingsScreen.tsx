@@ -12,8 +12,14 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import { Booking } from '../../types';
 import { COLORS } from '../../constants';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
+
+
 
 export default function MyBookingsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'completed'>('all');
@@ -158,11 +164,25 @@ export default function MyBookingsScreen() {
                   </View>
                 )}
                 {booking.status === 'completed' && (
-                  <View style={[styles.statusMessage, styles.statusMessageCompleted]}>
+                 <View>
+                   <View style={[styles.statusMessage, styles.statusMessageCompleted]}>
                     <Text style={styles.statusMessageText}>
                       🎉 Job completed! Thank you for using MyFundi.
                     </Text>
                   </View>
+                  {!booking.reviewed && (
+                    <TouchableOpacity
+                      style={styles.reviewButton}
+                      onPress={() => navigation.navigate('ReviewScreen', {
+                        bookingId: booking.id,
+                        artisanId: booking.artisanId,
+                        artisanName: booking.artisanName,
+                     })}
+                    >
+                     <Text style={styles.reviewButtonText}>⭐ Leave a Review</Text>
+                   </TouchableOpacity>
+                    )}
+                   </View>
                 )}
               </View>
             );
@@ -174,6 +194,18 @@ export default function MyBookingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  reviewButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  reviewButtonText: {
+    color: COLORS.white,
+    fontWeight: '600',
+    fontSize: 14,
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

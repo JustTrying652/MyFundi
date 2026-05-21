@@ -16,6 +16,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import { RootStackParamList } from '../../types';
 import { COLORS } from '../../constants';
+import { sendLocalNotification } from '../../services/notifications';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'BookingScreen'>;
@@ -56,6 +57,10 @@ export default function BookingScreen({ navigation, route }: Props) {
         `Your booking request has been sent to ${artisan.name}. They will contact you shortly.`,
         [{ text: 'OK', onPress: () => navigation.navigate('CustomerTabs') }]
       );
+      await sendLocalNotification(
+  'Booking Sent! 📅',
+  `Your booking request has been sent to ${artisan.name}. They will contact you shortly.`
+);
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {

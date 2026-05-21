@@ -23,6 +23,7 @@ import BookingScreen from '../screens/customer/BookingScreen';
 import DashboardScreen from '../screens/artisan/DashboardScreen';
 import ArtisanBookingsScreen from '../screens/artisan/ArtisanBookingsScreen';
 import EditProfileScreen from '../screens/artisan/EditProfileScreen';
+import ReviewScreen from '../screens/customer/ReviewScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const CustomerTab = createBottomTabNavigator<CustomerTabParamList>();
@@ -97,6 +98,7 @@ export default function Navigation() {
         <Stack.Screen name="ArtisanTabs" component={ArtisanTabs} />
         <Stack.Screen name="ArtisanDetail" component={ArtisanDetailScreen} />
         <Stack.Screen name="BookingScreen" component={BookingScreen} />
+        <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

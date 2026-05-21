@@ -16,6 +16,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import { RootStackParamList } from '../../types';
 import { COLORS } from '../../constants';
+import { registerForPushNotifications } from '../../services/notifications';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Login'>;
@@ -52,6 +53,7 @@ export default function LoginScreen({ navigation }: Props) {
     } finally {
       setLoading(false);
     }
+    registerForPushNotifications(uid);
   };
 
   return (

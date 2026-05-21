@@ -39,6 +39,7 @@ export interface Booking {
   description: string;
   date: string;
   status: 'pending' | 'accepted' | 'rejected' | 'completed';
+  reviewed: boolean;
   createdAt: Date;
 }
 
@@ -61,6 +62,7 @@ export type RootStackParamList = {
   ArtisanTabs: undefined;
   ArtisanDetail: { artisanId: string };
   BookingScreen: {artisan: Artisan};
+  ReviewScreen: { bookingId: string; artisanId: string; artisanName: string };
 };
 
 export type CustomerTabParamList = {

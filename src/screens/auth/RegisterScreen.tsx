@@ -17,6 +17,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import { RootStackParamList } from '../../types';
 import { COLORS } from '../../constants';
+import { registerForPushNotifications } from '../../services/notifications';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Register'>;
@@ -74,6 +75,9 @@ export default function RegisterScreen({ navigation, route }: Props) {
           createdAt: new Date(),
         });
       }
+
+      // Register for push notifications
+      await registerForPushNotifications(uid);
 
       // Navigate based on role
       if (isArtisan) {

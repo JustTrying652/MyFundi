@@ -16,6 +16,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 import { auth, db, storage } from '../../services/firebase';
 import { COLORS, TRADES } from '../../constants';
+import * as Location from 'expo-location';
+
 
 export default function EditProfileScreen() {
   const [name, setName] = useState('');
@@ -166,29 +168,43 @@ export default function EditProfileScreen() {
   };
 
   const handleSave = async () => {
-    if (!name || !trade || !phone) {
-      Alert.alert('Error', 'Name, trade and phone are required');
-      return;
+  if (!name || !trade || !phone) {
+    Alert.alert('Error', 'Name, trade and phone are required');
+    return;
+  }
+  setSaving(true);
+  try {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+
+    // Get real GPS coordinates from address
+    let latitude = 0;
+    let longitude = 0;
+
+    if (address) {
+      try {
+        const geocoded = await Location.geocodeAsync(address);
+        if (geocoded.length > 0) {
+          latitude = geocoded[0].latitude;
+          longitude = geocoded[0].longitude;
+        }
+      } catch (e) {
+        console.log('Geocoding failed, using 0,0');
+      }
     }
-    setSaving(true);
-    try {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
-      await updateDoc(doc(db, 'artisans', uid), {
-        name,
-        trade,
-        bio,
-        phone,
-        available,
-        location: { address, latitude: 0, longitude: 0 },
-      });
-      Alert.alert('Success', 'Profile updated successfully!');
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
-    } finally {
-      setSaving(false);
-    }
-  };
+
+    await updateDoc(doc(db, 'artisans', uid), {
+      name, trade, bio, phone, available,
+      location: { address, latitude, longitude },
+    });
+
+    Alert.alert('Success', 'Profile updated successfully!');
+  } catch (error: any) {
+    Alert.alert('Error', error.message);
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading) {
     return (

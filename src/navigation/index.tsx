@@ -25,6 +25,8 @@ import ArtisanBookingsScreen from '../screens/artisan/ArtisanBookingsScreen';
 import EditProfileScreen from '../screens/artisan/EditProfileScreen';
 import ReviewScreen from '../screens/customer/ReviewScreen';
 
+import MapScreen from '../screens/customer/MapScreen';
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const CustomerTab = createBottomTabNavigator<CustomerTabParamList>();
 const ArtisanTab = createBottomTabNavigator<ArtisanTabParamList>();
@@ -48,6 +50,11 @@ function CustomerTabs() {
         name="Search"
         component={SearchScreen}
         options={{ tabBarLabel: 'Search', tabBarIcon: ({ color }) => <Text style={{ color }}>🔍</Text> }}
+      />
+      <CustomerTab.Screen
+        name="Map"
+        component={MapScreen}
+        options={{ tabBarLabel: 'Map', tabBarIcon: ({ color }) => <Text style={{ color }}>🗺️</Text> }}
       />
       <CustomerTab.Screen
         name="MyBookings"
@@ -99,6 +106,7 @@ export default function Navigation() {
         <Stack.Screen name="ArtisanDetail" component={ArtisanDetailScreen} />
         <Stack.Screen name="BookingScreen" component={BookingScreen} />
         <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
+        <Stack.Screen name="MapScreen" component={MapScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

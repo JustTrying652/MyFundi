@@ -63,11 +63,13 @@ export type RootStackParamList = {
   ArtisanDetail: { artisanId: string };
   BookingScreen: {artisan: Artisan};
   ReviewScreen: { bookingId: string; artisanId: string; artisanName: string };
+  MapScreen: undefined;
 };
 
 export type CustomerTabParamList = {
   Home: undefined;
   Search: undefined;
+  Map: undefined;
   MyBookings: undefined;
   Profile: undefined;
 };

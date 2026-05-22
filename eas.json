@@ -15,12 +15,18 @@
       "env": {
         "EAS_SKIP_AUTO_FINGERPRINT": "1",
         "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      },
+      "android": {
+        "googleServicesFile": "$GOOGLE_SERVICES_JSON"
       }
     },
     "production": {
       "env": {
         "EAS_SKIP_AUTO_FINGERPRINT": "1",
         "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      },
+      "android": {
+        "googleServicesFile": "$GOOGLE_SERVICES_JSON"
       }
     }
   },

@@ -15,7 +15,6 @@
       "supportsTablet": true
     },
     "android": {
-      "googleServicesFile": "./google-services.json",
       "package": "com.ngata.MyFundi",
       "adaptiveIcon": {
         "foregroundImage": "./icon.png",

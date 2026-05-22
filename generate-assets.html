@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head><title>MyFundi Asset Generator</title></head>
+<body style="background:#1a1a1a; color:white; font-family:sans-serif; padding:20px;">
+  <h2>MyFundi Asset Generator</h2>
+  <p>Click each button to download the asset</p>
+  <button onclick="generateIcon()">Download Icon (1024x1024)</button>
+  <button onclick="generateSplash()">Download Splash (1284x2778)</button>
+  <canvas id="canvas" style="display:none"></canvas>
+
+  <script>
+    function drawIcon(ctx, size) {
+      const cx = size / 2, cy = size / 2, r = size / 2;
+      ctx.fillStyle = '#2C3E50';
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = '#F5A623'; ctx.lineWidth = size * 0.015;
+      ctx.beginPath(); ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2); ctx.stroke();
+
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(-Math.PI / 4);
+      const s = size / 200;
+      ctx.fillStyle = '#F5A623';
+      ctx.fillRect(-8*s, -55*s, 16*s, 70*s);
+      ctx.beginPath(); ctx.arc(0, -55*s, 18*s, 0, Math.PI*2);
+      ctx.strokeStyle = '#F5A623'; ctx.lineWidth = 10*s; ctx.stroke();
+      ctx.fillStyle = '#2C3E50';
+      ctx.beginPath(); ctx.arc(0, -55*s, 8*s, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#F5A623';
+      ctx.fillRect(-8*s, 15*s, 16*s, 14*s);
+      ctx.beginPath(); ctx.moveTo(-14*s,29*s); ctx.lineTo(14*s,29*s);
+      ctx.lineTo(8*s,46*s); ctx.lineTo(-8*s,46*s); ctx.closePath(); ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = '#F5A623'; ctx.font = `bold ${size*0.09}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.fillText('MyFundi', cx, cy + size*0.35);
+    }
+
+    function generateIcon() {
+      const canvas = document.getElementById('canvas');
+      canvas.width = 1024; canvas.height = 1024;
+      const ctx = canvas.getContext('2d');
+      drawIcon(ctx, 1024);
+      download(canvas, 'icon.png');
+    }
+
+    function generateSplash() {
+      const canvas = document.getElementById('canvas');
+      canvas.width = 1284; canvas.height = 2778;
+      const ctx = canvas.getContext('2d');
+      const w = 1284, h = 2778;
+
+      ctx.fillStyle = '#2C3E50';
+      ctx.fillRect(0, 0, w, h);
+
+      [300, 230, 160].forEach(r => {
+        ctx.strokeStyle = '#F5A623'; ctx.lineWidth = 1; ctx.globalAlpha = 0.15;
+        ctx.beginPath(); ctx.arc(w/2, h/2 - 200, r, 0, Math.PI*2); ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+
+      ctx.save(); ctx.translate(w/2, h/2 - 200);
+      drawIcon(ctx, 400);
+      ctx.restore();
+
+      ctx.fillStyle = '#F5A623'; ctx.font = 'bold 96px sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText('MyFundi', w/2, h/2 + 280);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '48px sans-serif';
+      ctx.fillText('Connect with skilled artisans', w/2, h/2 + 360);
+
+      download(canvas, 'splash.png');
+    }
+
+    function download(canvas, filename) {
+      const a = document.createElement('a');
+      a.download = filename;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+  </script>
+</body>
+</html>

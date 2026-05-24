@@ -34,6 +34,11 @@ export default function LoginScreen({ navigation }: Props) {
     }
 
     setLoading(true);
+
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      Alert.alert('Error', 'Login is taking longer than expected. Please try again.');
+    }, 10000); // 10 seconds timeout
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
@@ -52,7 +57,7 @@ export default function LoginScreen({ navigation }: Props) {
       console.error('Login error:', error);
       Alert.alert('Login Failed', `${error.code}: ${error.message}`);
     }
-    registerForPushNotifications(uid);
+    
   };
 
   return (

@@ -31,7 +31,7 @@ module.exports = {
       predictiveBackGestureEnabled: false,
       config: {
         googleMaps: {
-          apiKey: process.env.EXPO_PUBLIC_MAPS_API_KEY || "AIzaSyD-7Lf7fwwta2IG-f0-h5xA4Wr8y9QTWw4"
+          apiKey: process.env.EXPO_PUBLIC_MAPS_API_KEY || ""
         }
       }
     },

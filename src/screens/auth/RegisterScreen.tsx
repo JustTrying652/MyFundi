@@ -45,6 +45,11 @@ export default function RegisterScreen({ navigation, route }: Props) {
     }
 
     setLoading(true);
+
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      Alert.alert('Error', 'Registration is taking longer than expected. Please try again.');
+    }, 10000); // 10 seconds timeout
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
@@ -86,9 +91,8 @@ export default function RegisterScreen({ navigation, route }: Props) {
         navigation.reset({ index: 0, routes: [{ name: 'CustomerTabs' }] });
       }
     } catch (error: any) {
-      Alert.alert('Registration Failed', error.message);
-    } finally {
-      setLoading(false);
+      console.error('Registration error:', error);
+      Alert.alert('Registration Failed', `${error.code}: ${error.message}`);
     }
   };
 

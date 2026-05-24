@@ -49,9 +49,8 @@ export default function LoginScreen({ navigation }: Props) {
         }
       }
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message);
-    } finally {
-      setLoading(false);
+      console.error('Login error:', error);
+      Alert.alert('Login Failed', `${error.code}: ${error.message}`);
     }
     registerForPushNotifications(uid);
   };

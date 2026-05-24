@@ -33,12 +33,8 @@ export default function LoginScreen({ navigation }: Props) {
       return;
     }
 
-    setLoading(true);
+    setLoading(false);
 
-    const timeout = setTimeout(() => {
-      setLoading(false);
-      Alert.alert('Error', 'Login is taking longer than expected. Please try again.');
-    }, 10000); // 10 seconds timeout
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;

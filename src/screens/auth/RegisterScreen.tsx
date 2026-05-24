@@ -44,12 +44,7 @@ export default function RegisterScreen({ navigation, route }: Props) {
       return;
     }
 
-    setLoading(true);
-
-    const timeout = setTimeout(() => {
-      setLoading(false);
-      Alert.alert('Error', 'Registration is taking longer than expected. Please try again.');
-    }, 10000); // 10 seconds timeout
+    setLoading(false);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;

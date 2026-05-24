@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  Image,
 } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { collection, getDocs } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
@@ -19,12 +21,14 @@ import { COLORS } from '../../constants';
 export default function MapScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [artisans, setArtisans] = useState<Artisan[]>([]);
+  const [allArtisans, setAllArtisans] = useState<Artisan[]>([]);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mapError, setMapError] = useState(false);
+  const [selectedArtisan, setSelectedArtisan] = useState<Artisan | null>(null);
+  const [mapRef, setMapRef] = useState<MapView | null>(null);
 
   useEffect(() => {
     getLocationAndArtisans();
@@ -43,8 +47,11 @@ export default function MapScreen() {
           longitude: location.coords.longitude,
         });
       }
+
       const snapshot = await getDocs(collection(db, 'artisans'));
       const data = snapshot.docs.map(doc => doc.data() as Artisan);
+      setAllArtisans(data);
+
       const withLocation = data.filter(
         a => a.location?.latitude !== 0 && a.location?.longitude !== 0
       );
@@ -54,6 +61,18 @@ export default function MapScreen() {
       setUserLocation({ latitude: -1.2921, longitude: 36.8219 });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSelectArtisan = (artisan: Artisan) => {
+    setSelectedArtisan(artisan);
+    if (artisan.location?.latitude && artisan.location?.longitude && mapRef) {
+      mapRef.animateToRegion({
+        latitude: artisan.location.latitude,
+        longitude: artisan.location.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 500);
     }
   };
 
@@ -68,21 +87,18 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Fundis Near You</Text>
         <Text style={styles.subtitle}>
-          {artisans.length} fundi{artisans.length !== 1 ? 's' : ''} on the map
+          {allArtisans.length} fundi{allArtisans.length !== 1 ? 's' : ''} available
         </Text>
       </View>
 
-      {mapError ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.emptyEmoji}>🗺️</Text>
-          <Text style={styles.emptyTitle}>Map unavailable</Text>
-          <Text style={styles.emptySubtitle}>Could not load map on this device</Text>
-        </View>
-      ) : (
+      {/* Map - top half */}
+      <View style={styles.mapContainer}>
         <MapView
+          ref={ref => setMapRef(ref)}
           style={styles.map}
           initialRegion={{
             latitude: userLocation?.latitude || -1.2921,
@@ -100,37 +116,77 @@ export default function MapScreen() {
                 latitude: artisan.location.latitude,
                 longitude: artisan.location.longitude,
               }}
-              pinColor={COLORS.primary}
-            >
-              <Callout onPress={() => navigation.navigate('ArtisanDetail', { artisanId: artisan.uid })}>
-                <View style={styles.callout}>
-                  <Text style={styles.calloutName}>{artisan.name}</Text>
-                  <Text style={styles.calloutTrade}>{artisan.trade}</Text>
-                  <Text style={styles.calloutLocation}>
-                    📍 {artisan.location?.address || 'No address'}
-                  </Text>
-                  <Text style={styles.calloutRating}>
-                    ⭐ {artisan.rating || '0.0'} · {artisan.available ? '🟢 Available' : '🔴 Busy'}
-                  </Text>
-                  <Text style={styles.calloutTap}>Tap to view profile →</Text>
-                </View>
-              </Callout>
-            </Marker>
+              pinColor={selectedArtisan?.uid === artisan.uid ? '#E74C3C' : COLORS.primary}
+              onPress={() => handleSelectArtisan(artisan)}
+            />
           ))}
         </MapView>
-      )}
+      </View>
 
-      {!mapError && artisans.length === 0 && (
-        <View style={styles.emptyOverlay}>
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyEmoji}>🗺️</Text>
-            <Text style={styles.emptyTitle}>No fundis on map yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Fundis appear here once they set their exact location
-            </Text>
-          </View>
+      {/* Fundi List - bottom half */}
+      <View style={styles.listContainer}>
+        <View style={styles.listHeader}>
+          <Text style={styles.listTitle}>All Fundis</Text>
+          <Text style={styles.listCount}>{allArtisans.length} total</Text>
         </View>
-      )}
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 80 }}
+        >
+          {allArtisans.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyEmoji}>🔍</Text>
+              <Text style={styles.emptyTitle}>No fundis yet</Text>
+              <Text style={styles.emptySubtitle}>Invite a fundi to join MyFundi!</Text>
+            </View>
+          ) : (
+            allArtisans.map((artisan, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.artisanCard,
+                  selectedArtisan?.uid === artisan.uid && styles.artisanCardSelected,
+                ]}
+                onPress={() => {
+                  handleSelectArtisan(artisan);
+                  navigation.navigate('ArtisanDetail', { artisanId: artisan.uid });
+                }}
+              >
+                <View style={styles.artisanAvatar}>
+                  {artisan.profilePhoto ? (
+                    <Image source={{ uri: artisan.profilePhoto }} style={styles.artisanAvatarImage} />
+                  ) : (
+                    <Text style={styles.artisanAvatarText}>🔨</Text>
+                  )}
+                </View>
+                <View style={styles.artisanInfo}>
+                  <Text style={styles.artisanName}>{artisan.name}</Text>
+                  <Text style={styles.artisanTrade}>{artisan.trade || 'Trade not set'}</Text>
+                  <Text style={styles.artisanLocation}>
+                    📍 {artisan.location?.address || 'Location not set'}
+                  </Text>
+                  <View style={styles.ratingRow}>
+                    <Text style={styles.rating}>⭐ {artisan.rating || '0.0'}</Text>
+                    <Text style={styles.reviews}>({artisan.totalReviews || 0} reviews)</Text>
+                    {artisan.available && (
+                      <View style={styles.availableBadge}>
+                        <Text style={styles.availableText}>Available</Text>
+                      </View>
+                    )}
+                    {artisan.location?.latitude !== 0 && artisan.location?.longitude !== 0 && (
+                      <View style={styles.onMapBadge}>
+                        <Text style={styles.onMapText}>📍 On map</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <Text style={styles.arrow}>→</Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -142,17 +198,60 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 12, backgroundColor: COLORS.background },
   title: { fontSize: 24, fontWeight: 'bold', color: COLORS.secondary },
   subtitle: { fontSize: 14, color: COLORS.subtext, marginTop: 4 },
+  mapContainer: { height: 250 },
   map: { flex: 1 },
-  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  callout: { width: 200, padding: 8 },
-  calloutName: { fontSize: 15, fontWeight: 'bold', color: COLORS.secondary },
-  calloutTrade: { fontSize: 13, color: COLORS.primary, fontWeight: '600', marginTop: 2 },
-  calloutLocation: { fontSize: 12, color: COLORS.subtext, marginTop: 4 },
-  calloutRating: { fontSize: 12, color: COLORS.text, marginTop: 4 },
-  calloutTap: { fontSize: 12, color: COLORS.primary, fontWeight: '600', marginTop: 6 },
-  emptyOverlay: { position: 'absolute', bottom: 40, left: 24, right: 24 },
-  emptyCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 20, alignItems: 'center', elevation: 4 },
+  listContainer: { flex: 1, backgroundColor: COLORS.background },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  listTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
+  listCount: { fontSize: 13, color: COLORS.subtext },
+  emptyState: { alignItems: 'center', paddingTop: 40 },
   emptyEmoji: { fontSize: 40, marginBottom: 8 },
   emptyTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
-  emptySubtitle: { fontSize: 13, color: COLORS.subtext, marginTop: 4, textAlign: 'center' },
+  emptySubtitle: { fontSize: 13, color: COLORS.subtext, marginTop: 4 },
+  artisanCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    marginHorizontal: 24,
+    marginTop: 12,
+    borderRadius: 16,
+    padding: 14,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+  artisanCardSelected: {
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  artisanAvatar: {
+    width: 52, height: 52, borderRadius: 26,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 14,
+  },
+  artisanAvatarImage: { width: 52, height: 52, borderRadius: 26 },
+  artisanAvatarText: { fontSize: 26 },
+  artisanInfo: { flex: 1 },
+  artisanName: { fontSize: 15, fontWeight: 'bold', color: COLORS.text },
+  artisanTrade: { fontSize: 13, color: COLORS.primary, fontWeight: '600', marginTop: 2 },
+  artisanLocation: { fontSize: 12, color: COLORS.subtext, marginTop: 3 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', marginTop: 5, gap: 6, flexWrap: 'wrap' },
+  rating: { fontSize: 12, color: COLORS.text },
+  reviews: { fontSize: 12, color: COLORS.subtext },
+  availableBadge: { backgroundColor: '#E8F8F0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+  availableText: { fontSize: 11, color: COLORS.success, fontWeight: '600' },
+  onMapBadge: { backgroundColor: '#EBF5FB', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+  onMapText: { fontSize: 11, color: '#3498DB', fontWeight: '600' },
+  arrow: { fontSize: 18, color: COLORS.subtext, marginLeft: 8 },
 });

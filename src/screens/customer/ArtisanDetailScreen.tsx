@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Linking,
   Alert,
   Image,
+  StatusBar,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -77,8 +77,11 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>← Back</Text>
@@ -95,7 +98,6 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
           )}
           <Text style={styles.name}>{artisan.name}</Text>
           <Text style={styles.trade}>{artisan.trade}</Text>
-
           <View style={styles.statsRow}>
             <View style={styles.stat}>
               <Text style={styles.statValue}>⭐ {artisan.rating || '0.0'}</Text>
@@ -138,11 +140,7 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
             <Text style={styles.sectionTitle}>Work Photos</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {artisan.photos.map((photo, index) => (
-                <Image
-                  key={index}
-                  source={{ uri: photo }}
-                  style={styles.workPhoto}
-                />
+                <Image key={index} source={{ uri: photo }} style={styles.workPhoto} />
               ))}
             </ScrollView>
           </View>
@@ -163,10 +161,6 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
 
         {/* Book Button */}
         <View style={styles.section}>
-          <ScrollView 
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{ paddingBottom: 80 }}
-></ScrollView>
           <TouchableOpacity
             style={[styles.bookButton, !artisan.available && styles.bookButtonDisabled]}
             onPress={() => {
@@ -183,31 +177,29 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    paddingTop: StatusBar.currentHeight || 0,
+  },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { color: COLORS.subtext, fontSize: 16 },
   backButton: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 },
   backText: { color: COLORS.primary, fontSize: 16 },
   profileHeader: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    backgroundColor: COLORS.white,
-    marginBottom: 16,
+    alignItems: 'center', paddingVertical: 24,
+    backgroundColor: COLORS.white, marginBottom: 16,
   },
-  profilePhoto: {
-    width: 100, height: 100, borderRadius: 50,
-    marginBottom: 12,
-  },
+  profilePhoto: { width: 100, height: 100, borderRadius: 50, marginBottom: 12 },
   avatarPlaceholder: {
     width: 100, height: 100, borderRadius: 50,
     backgroundColor: COLORS.background,
-    justifyContent: 'center', alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 12,
   },
   avatarText: { fontSize: 40 },
   name: { fontSize: 22, fontWeight: 'bold', color: COLORS.secondary },
@@ -219,16 +211,10 @@ const styles = StyleSheet.create({
   statDivider: { width: 1, backgroundColor: COLORS.border },
   section: { paddingHorizontal: 24, marginBottom: 16 },
   sectionTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.text, marginBottom: 8 },
-  card: {
-    backgroundColor: COLORS.white, borderRadius: 12,
-    padding: 16, borderWidth: 1, borderColor: COLORS.border,
-  },
+  card: { backgroundColor: COLORS.white, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: COLORS.border },
   bio: { fontSize: 14, color: COLORS.text, lineHeight: 22 },
   locationText: { fontSize: 14, color: COLORS.text },
-  workPhoto: {
-    width: 140, height: 100, borderRadius: 12,
-    marginRight: 10,
-  },
+  workPhoto: { width: 140, height: 100, borderRadius: 12, marginRight: 10 },
   contactRow: { flexDirection: 'row', gap: 12 },
   callButton: {
     flex: 1, backgroundColor: COLORS.white,
@@ -236,15 +222,9 @@ const styles = StyleSheet.create({
     borderRadius: 12, padding: 14, alignItems: 'center',
   },
   callButtonText: { color: COLORS.primary, fontWeight: '600', fontSize: 15 },
-  whatsappButton: {
-    flex: 1, backgroundColor: '#25D366',
-    borderRadius: 12, padding: 14, alignItems: 'center',
-  },
+  whatsappButton: { flex: 1, backgroundColor: '#25D366', borderRadius: 12, padding: 14, alignItems: 'center' },
   whatsappButtonText: { color: COLORS.white, fontWeight: '600', fontSize: 15 },
-  bookButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12, padding: 16, alignItems: 'center',
-  },
+  bookButton: { backgroundColor: COLORS.primary, borderRadius: 12, padding: 16, alignItems: 'center' },
   bookButtonDisabled: { backgroundColor: COLORS.border },
   bookButtonText: { color: COLORS.white, fontWeight: 'bold', fontSize: 16 },
 });

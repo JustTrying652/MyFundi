@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
 import {
   collection,
@@ -16,7 +17,7 @@ import {
   getDocs,
   doc,
   updateDoc,
-  orderBy,
+  getDoc,
 } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import { Booking } from '../../types';
@@ -36,29 +37,47 @@ export default function ArtisanBookingsScreen() {
     try {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
-
-      const q = query(
-        collection(db, 'bookings'),
-        where('artisanId', '==', uid),
-      );
+      const q = query(collection(db, 'bookings'), where('artisanId', '==', uid));
       const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Booking[];
-
-      // Sort by createdAt descending
+      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as Booking[];
       data.sort((a, b) => {
         const aTime = (a.createdAt as any)?.seconds || 0;
         const bTime = (b.createdAt as any)?.seconds || 0;
         return bTime - aTime;
       });
-
       setBookings(data);
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleContactCustomer = async (customerId: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', customerId));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        Alert.alert(
+          `Contact ${data.name}`,
+          'How would you like to contact this customer?',
+          [
+            { text: '📞 Call', onPress: () => Linking.openURL(`tel:${data.phone}`) },
+            {
+              text: '💬 WhatsApp',
+              onPress: () => {
+                const phone = data.phone.startsWith('0')
+                  ? '254' + data.phone.slice(1)
+                  : data.phone;
+                Linking.openURL(`https://wa.me/${phone}`);
+              }
+            },
+            { text: 'Cancel', style: 'cancel' }
+          ]
+        );
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
     }
   };
 
@@ -68,7 +87,6 @@ export default function ArtisanBookingsScreen() {
       rejected: 'Reject',
       completed: 'Mark as Completed',
     };
-
     Alert.alert(
       `${labels[status]} Booking`,
       `Are you sure you want to ${labels[status].toLowerCase()} this booking?`,
@@ -79,9 +97,18 @@ export default function ArtisanBookingsScreen() {
           onPress: async () => {
             try {
               await updateDoc(doc(db, 'bookings', bookingId), { status });
-              setBookings(prev =>
-                prev.map(b => b.id === bookingId ? { ...b, status } : b)
-              );
+              setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
+              if (status === 'accepted') {
+                await sendLocalNotification(
+                  'Booking Accepted ✅',
+                  'You accepted a booking request. Remember to contact the customer!'
+                );
+              } else if (status === 'completed') {
+                await sendLocalNotification(
+                  'Job Completed 🎉',
+                  'Great work! The job has been marked as completed.'
+                );
+              }
             } catch (error: any) {
               Alert.alert('Error', error.message);
             }
@@ -89,17 +116,6 @@ export default function ArtisanBookingsScreen() {
         },
       ]
     );
-    if (status === 'accepted') {
-  await sendLocalNotification(
-    'Booking Accepted ✅',
-    `You accepted a booking request. Remember to contact the customer!`
-  );
-} else if (status === 'completed') {
-  await sendLocalNotification(
-    'Job Completed 🎉',
-    'Great work! The job has been marked as completed.'
-  );
-}
   };
 
   const getStatusStyle = (status: string) => {
@@ -118,18 +134,12 @@ export default function ArtisanBookingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>My Bookings</Text>
         <Text style={styles.subtitle}>{bookings.length} total requests</Text>
       </View>
 
-      {/* Filter Tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterScroll}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
         {(['all', 'pending', 'accepted', 'completed'] as const).map(f => (
           <TouchableOpacity
             key={f}
@@ -149,9 +159,7 @@ export default function ArtisanBookingsScreen() {
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>📋</Text>
           <Text style={styles.emptyTitle}>No bookings yet</Text>
-          <Text style={styles.emptySubtitle}>
-            Complete your profile so customers can find and book you
-          </Text>
+          <Text style={styles.emptySubtitle}>Complete your profile so customers can find and book you</Text>
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false} style={styles.list}>
@@ -159,7 +167,6 @@ export default function ArtisanBookingsScreen() {
             const statusStyle = getStatusStyle(booking.status);
             return (
               <View key={booking.id} style={styles.bookingCard}>
-                {/* Card Header */}
                 <View style={styles.cardHeader}>
                   <View>
                     <Text style={styles.customerName}>{booking.customerName}</Text>
@@ -172,16 +179,20 @@ export default function ArtisanBookingsScreen() {
                   </View>
                 </View>
 
-                {/* Details */}
                 <View style={styles.cardBody}>
                   <Text style={styles.detailLabel}>📅 Date Requested</Text>
                   <Text style={styles.detailValue}>{booking.date}</Text>
-
                   <Text style={styles.detailLabel}>📝 Job Description</Text>
                   <Text style={styles.detailValue}>{booking.description}</Text>
                 </View>
 
-                {/* Actions */}
+                <TouchableOpacity
+                  style={styles.contactCustomerButton}
+                  onPress={() => handleContactCustomer(booking.customerId)}
+                >
+                  <Text style={styles.contactCustomerText}>📞 Contact Customer</Text>
+                </TouchableOpacity>
+
                 {booking.status === 'pending' && (
                   <View style={styles.actionsRow}>
                     <TouchableOpacity
@@ -217,166 +228,36 @@ export default function ArtisanBookingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.secondary,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.subtext,
-    marginTop: 4,
-  },
-  filterScroll: {
-    paddingLeft: 24,
-    marginVertical: 12,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginRight: 8,
-  },
-  filterChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  filterChipText: {
-    color: COLORS.text,
-    fontSize: 13,
-  },
-  filterChipTextActive: {
-    color: COLORS.white,
-    fontWeight: 'bold',
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyEmoji: {
-    fontSize: 60,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: COLORS.subtext,
-    marginTop: 8,
-    textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-  list: {
-    paddingHorizontal: 24,
-  },
-  bookingCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  customerName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  bookingTrade: {
-    fontSize: 13,
-    color: COLORS.primary,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cardBody: {
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 12,
-    gap: 4,
-  },
-  detailLabel: {
-    fontSize: 12,
-    color: COLORS.subtext,
-    marginTop: 8,
-  },
-  detailValue: {
-    fontSize: 14,
-    color: COLORS.text,
-    marginTop: 2,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-  },
-  rejectButton: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: COLORS.danger,
-    borderRadius: 10,
-    padding: 12,
-    alignItems: 'center',
-  },
-  rejectButtonText: {
-    color: COLORS.danger,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  acceptButton: {
-    flex: 1,
-    backgroundColor: COLORS.success,
-    borderRadius: 10,
-    padding: 12,
-    alignItems: 'center',
-  },
-  acceptButtonText: {
-    color: COLORS.white,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  completeButton: {
-    backgroundColor: '#EBF5FB',
-    borderRadius: 10,
-    padding: 12,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  completeButtonText: {
-    color: '#3498DB',
-    fontWeight: '600',
-    fontSize: 14,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  header: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 8 },
+  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.secondary },
+  subtitle: { fontSize: 14, color: COLORS.subtext, marginTop: 4 },
+  filterScroll: { paddingLeft: 24, marginVertical: 12 },
+  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border, marginRight: 8 },
+  filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  filterChipText: { color: COLORS.text, fontSize: 13 },
+  filterChipTextActive: { color: COLORS.white, fontWeight: 'bold' },
+  emptyState: { alignItems: 'center', paddingTop: 60 },
+  emptyEmoji: { fontSize: 60, marginBottom: 16 },
+  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.text },
+  emptySubtitle: { fontSize: 14, color: COLORS.subtext, marginTop: 8, textAlign: 'center', paddingHorizontal: 40 },
+  list: { paddingHorizontal: 24 },
+  bookingCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 16, marginBottom: 12, elevation: 2 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
+  customerName: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
+  bookingTrade: { fontSize: 13, color: COLORS.primary, fontWeight: '600', marginTop: 2 },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  statusText: { fontSize: 12, fontWeight: '600' },
+  cardBody: { borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12, gap: 4 },
+  detailLabel: { fontSize: 12, color: COLORS.subtext, marginTop: 8 },
+  detailValue: { fontSize: 14, color: COLORS.text, marginTop: 2 },
+  actionsRow: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  rejectButton: { flex: 1, borderWidth: 1.5, borderColor: COLORS.danger, borderRadius: 10, padding: 12, alignItems: 'center' },
+  rejectButtonText: { color: COLORS.danger, fontWeight: '600', fontSize: 14 },
+  acceptButton: { flex: 1, backgroundColor: COLORS.success, borderRadius: 10, padding: 12, alignItems: 'center' },
+  acceptButtonText: { color: COLORS.white, fontWeight: '600', fontSize: 14 },
+  completeButton: { backgroundColor: '#EBF5FB', borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 12 },
+  completeButtonText: { color: '#3498DB', fontWeight: '600', fontSize: 14 },
+  contactCustomerButton: { backgroundColor: '#EBF5FB', borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 12 },
+  contactCustomerText: { color: '#3498DB', fontWeight: '600', fontSize: 14 },
 });

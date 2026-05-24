@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingBottom: 32,
+    paddingBottom: 80,
   },
   loginText: {
     color: COLORS.subtext,

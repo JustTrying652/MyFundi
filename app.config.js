@@ -28,7 +28,12 @@ module.exports = {
         foregroundImage: "./icon.png",
         backgroundColor: "#2C3E50"
       },
-      predictiveBackGestureEnabled: false
+      predictiveBackGestureEnabled: false,
+      config: {
+        googleMaps: {
+          apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyCOFuzplF7cVqR27homB068v1uPeCZgbTE"
+        }
+      }
     },
     web: {
       favicon: "./assets/favicon.png"

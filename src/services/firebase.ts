@@ -12,6 +12,15 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
+console.log('Firebase config loaded:', JSON.stringify({
+  apiKey: firebaseConfig.apiKey ? 'SET' : 'MISSING',
+  authDomain: firebaseConfig.authDomain ? 'SET' : 'MISSING',
+  projectId: firebaseConfig.projectId ? 'SET' : 'MISSING',
+  storageBucket: firebaseConfig.storageBucket ? 'SET' : 'MISSING',
+  messagingSenderId: firebaseConfig.messagingSenderId ? 'SET' : 'MISSING',
+  appId: firebaseConfig.appId ? 'SET' : 'MISSING',
+}));
+
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);

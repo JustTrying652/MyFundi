@@ -163,6 +163,10 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
 
         {/* Book Button */}
         <View style={styles.section}>
+          <ScrollView 
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 80 }}
+></ScrollView>
           <TouchableOpacity
             style={[styles.bookButton, !artisan.available && styles.bookButtonDisabled]}
             onPress={() => {

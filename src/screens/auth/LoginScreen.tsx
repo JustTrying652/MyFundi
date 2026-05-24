@@ -55,7 +55,7 @@ export default function LoginScreen({ navigation }: Props) {
       }
     } catch (error: any) {
       console.log('Attempting login with auth:', auth.app.options.projectId);
-      Alert.alert('Debug', `Project ID: ${auth.app.options.projectId || 'MISSING'}`);
+      
       console.error('Login error:', error);
       Alert.alert('Login Failed', `${error.code}: ${error.message}`);
     }

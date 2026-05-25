@@ -137,6 +137,16 @@ export default function MyBookingsScreen() {
                       {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                     </Text>
                   </View>
+                  <TouchableOpacity
+  style={styles.chatButton}
+  onPress={() => navigation.navigate('ChatScreen', {
+    bookingId: booking.id,
+    recipientName: booking.artisanName,
+    recipientId: booking.artisanId,
+  })}
+>
+  <Text style={styles.chatButtonText}>💬 Open Chat</Text>
+</TouchableOpacity>
                 </View>
 
                 {/* Details */}
@@ -194,6 +204,20 @@ export default function MyBookingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  chatButton: {
+  backgroundColor: '#F0F3FF',
+  borderRadius: 10,
+  padding: 12,
+  alignItems: 'center',
+  marginTop: 10,
+  borderWidth: 1,
+  borderColor: '#C5CAE9',
+},
+chatButtonText: {
+  color: '#3F51B5',
+  fontWeight: '600',
+  fontSize: 14,
+},
   reviewButton: {
     backgroundColor: COLORS.primary,
     borderRadius: 10,

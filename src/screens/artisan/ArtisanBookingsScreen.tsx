@@ -23,8 +23,13 @@ import { auth, db } from '../../services/firebase';
 import { Booking } from '../../types';
 import { COLORS } from '../../constants';
 import { sendLocalNotification } from '../../services/notifications';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../types';
+
 
 export default function ArtisanBookingsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'completed'>('all');
@@ -192,7 +197,16 @@ export default function ArtisanBookingsScreen() {
                 >
                   <Text style={styles.contactCustomerText}>📞 Contact Customer</Text>
                 </TouchableOpacity>
-
+                <TouchableOpacity
+  style={styles.chatButton}
+  onPress={() => navigation.navigate('ChatScreen', {
+    bookingId: booking.id,
+    recipientName: booking.customerName,
+    recipientId: booking.customerId,
+  })}
+>
+  <Text style={styles.chatButtonText}>💬 Open Chat</Text>
+</TouchableOpacity>
                 {booking.status === 'pending' && (
                   <View style={styles.actionsRow}>
                     <TouchableOpacity
@@ -228,6 +242,20 @@ export default function ArtisanBookingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  chatButton: {
+  backgroundColor: '#F0F3FF',
+  borderRadius: 10,
+  padding: 12,
+  alignItems: 'center',
+  marginTop: 10,
+  borderWidth: 1,
+  borderColor: '#C5CAE9',
+},
+chatButtonText: {
+  color: '#3F51B5',
+  fontWeight: '600',
+  fontSize: 14,
+},
   container: { flex: 1, backgroundColor: COLORS.background },
   header: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 8 },
   title: { fontSize: 24, fontWeight: 'bold', color: COLORS.secondary },

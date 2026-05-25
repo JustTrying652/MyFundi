@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
-import { RootStackParamList, CustomerTabParamList, ArtisanTabParamList } from '../types';
+import { RootStackParamList, CustomerTabParamList, ArtisanTabParamList, AdminTabParamList } from '../types';
 import { COLORS } from '../constants';
 
 // Auth Screens (placeholders for now)
@@ -27,10 +27,17 @@ import ReviewScreen from '../screens/customer/ReviewScreen';
 import MapScreen from '../screens/customer/MapScreen';
 import ChatScreen from '../screens/chat/ChatScreen';
 
+// Admin Screens (placeholders for now)
+import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
+import AdminUsersScreen from '../screens/admin/AdminUsersScreen';
+import AdminBookingsScreen from '../screens/admin/AdminBookingsScreen';
+
+
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const CustomerTab = createBottomTabNavigator<CustomerTabParamList>();
 const ArtisanTab = createBottomTabNavigator<ArtisanTabParamList>();
-
+const AdminTab = createBottomTabNavigator<AdminTabParamList>();
 function CustomerTabs() {
   return (
     <CustomerTab.Navigator
@@ -94,6 +101,35 @@ function ArtisanTabs() {
   );
 }
 
+function AdminTabs() {
+  return (
+    <AdminTab.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.subtext,
+        tabBarStyle: { backgroundColor: COLORS.white },
+        headerShown: false,
+      }}
+    >
+      <AdminTab.Screen
+        name="AdminDashboard"
+        component={AdminDashboardScreen}
+        options={{ tabBarLabel: 'Dashboard', tabBarIcon: ({ color }) => <Text style={{ color }}>📊</Text> }}
+      />
+      <AdminTab.Screen
+        name="AdminUsers"
+        component={AdminUsersScreen}
+        options={{ tabBarLabel: 'Users', tabBarIcon: ({ color }) => <Text style={{ color }}>👥</Text> }}
+      />
+      <AdminTab.Screen
+        name="AdminBookings"
+        component={AdminBookingsScreen}
+        options={{ tabBarLabel: 'Bookings', tabBarIcon: ({ color }) => <Text style={{ color }}>📋</Text> }}
+      />
+    </AdminTab.Navigator>
+  );
+}
+
 export default function Navigation() {
   return (
     <NavigationContainer>
@@ -108,6 +144,7 @@ export default function Navigation() {
         <Stack.Screen name="ReviewScreen" component={ReviewScreen} />
         <Stack.Screen name="MapScreen" component={MapScreen} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen name="AdminTabs" component={AdminTabs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

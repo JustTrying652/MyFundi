@@ -1,5 +1,4 @@
-
-export type UserRole = 'customer' | 'artisan';
+export type UserRole = 'customer' | 'artisan' | 'admin';
 
 export interface User {
   uid: string;
@@ -65,6 +64,7 @@ export type RootStackParamList = {
   ReviewScreen: { bookingId: string; artisanId: string; artisanName: string };
   MapScreen: undefined;
   ChatScreen: { bookingId: string; recipientName: string; recipientId: string };
+  AdminTabs: undefined;
 };
 
 export type CustomerTabParamList = {
@@ -80,4 +80,10 @@ export type ArtisanTabParamList = {
   Bookings: undefined;
   EditProfile: undefined;
   Profile: undefined;
+};
+
+export type AdminTabParamList = {
+  AdminDashboard: undefined;
+  AdminUsers: undefined;
+  AdminBookings: undefined;
 };

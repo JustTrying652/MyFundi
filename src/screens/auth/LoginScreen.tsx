@@ -28,35 +28,38 @@ export default function LoginScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+  if (!email || !password) {
+    Alert.alert('Error', 'Please fill in all fields');
+    return;
+  }
 
-    setLoading(false);
+  setLoading(true);
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const uid = userCredential.user.uid;
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
 
-      // Fetch user role from Firestore
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        if (userData.role === 'artisan') {
-          navigation.reset({ index: 0, routes: [{ name: 'ArtisanTabs' }] });
-        } else {
-          navigation.reset({ index: 0, routes: [{ name: 'CustomerTabs' }] });
-        }
+    registerForPushNotifications(uid);
+
+    const userDoc = await getDoc(doc(db, 'users', uid));
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      if (userData.role === 'artisan') {
+        navigation.reset({ index: 0, routes: [{ name: 'ArtisanTabs' }] });
+      } else if (userData.role === 'admin') {
+        navigation.reset({ index: 0, routes: [{ name: 'AdminTabs' }] });
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: 'CustomerTabs' }] });
       }
-    } catch (error: any) {
-      console.log('Attempting login with auth:', auth.app.options.projectId);
-      
-      console.error('Login error:', error);
-      Alert.alert('Login Failed', `${error.code}: ${error.message}`);
+    } else {
+      Alert.alert('Error', 'User data not found');
     }
-    
-  };
+  } catch (error: any) {
+    Alert.alert('Login Failed', `${error.code}: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>

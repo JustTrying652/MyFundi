@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   ScrollView,
   Image,
 } from 'react-native';
@@ -27,6 +26,7 @@ export default function MapScreen() {
     longitude: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mapError, setMapError] = useState(false);
   const [selectedArtisan, setSelectedArtisan] = useState<Artisan | null>(null);
   const [mapRef, setMapRef] = useState<MapView | null>(null);
 
@@ -36,22 +36,30 @@ export default function MapScreen() {
 
   const getLocationAndArtisans = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location access is needed to show fundis near you');
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const location = await Promise.race([
+            Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Location timeout')), 5000)
+            ),
+          ]) as Location.LocationObject;
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+        } else {
+          setUserLocation({ latitude: -1.2921, longitude: 36.8219 });
+        }
+      } catch (locationError) {
+        console.log('Location error, using default:', locationError);
         setUserLocation({ latitude: -1.2921, longitude: 36.8219 });
-      } else {
-        const location = await Location.getCurrentPositionAsync({});
-        setUserLocation({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
       }
 
       const snapshot = await getDocs(collection(db, 'artisans'));
       const data = snapshot.docs.map(doc => doc.data() as Artisan);
       setAllArtisans(data);
-
       const withLocation = data.filter(
         a => a.location?.latitude !== 0 && a.location?.longitude !== 0
       );
@@ -59,6 +67,7 @@ export default function MapScreen() {
     } catch (error) {
       console.error('Error:', error);
       setUserLocation({ latitude: -1.2921, longitude: 36.8219 });
+      setMapError(true);
     } finally {
       setLoading(false);
     }
@@ -97,30 +106,43 @@ export default function MapScreen() {
 
       {/* Map - top half */}
       <View style={styles.mapContainer}>
-        <MapView
-          ref={ref => setMapRef(ref)}
-          style={styles.map}
-          initialRegion={{
-            latitude: userLocation?.latitude || -1.2921,
-            longitude: userLocation?.longitude || 36.8219,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-          showsUserLocation
-          showsMyLocationButton
-        >
-          {artisans.map((artisan, index) => (
-            <Marker
-              key={index}
-              coordinate={{
-                latitude: artisan.location.latitude,
-                longitude: artisan.location.longitude,
-              }}
-              pinColor={selectedArtisan?.uid === artisan.uid ? '#E74C3C' : COLORS.primary}
-              onPress={() => handleSelectArtisan(artisan)}
-            />
-          ))}
-        </MapView>
+        {mapError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.emptyEmoji}>🗺️</Text>
+            <Text style={styles.emptyTitle}>Map unavailable</Text>
+            <Text style={styles.emptySubtitle}>Could not load map on this device</Text>
+          </View>
+        ) : userLocation ? (
+          <MapView
+            ref={ref => setMapRef(ref)}
+            style={styles.map}
+            initialRegion={{
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
+              latitudeDelta: 0.05,
+              longitudeDelta: 0.05,
+            }}
+            showsUserLocation
+            showsMyLocationButton
+          >
+            {artisans.map((artisan, index) => (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: artisan.location.latitude,
+                  longitude: artisan.location.longitude,
+                }}
+                pinColor={selectedArtisan?.uid === artisan.uid ? '#E74C3C' : COLORS.primary}
+                onPress={() => handleSelectArtisan(artisan)}
+              />
+            ))}
+          </MapView>
+        ) : (
+          <View style={styles.errorContainer}>
+            <ActivityIndicator color={COLORS.primary} />
+            <Text style={styles.loadingText}>Loading map...</Text>
+          </View>
+        )}
       </View>
 
       {/* Fundi List - bottom half */}
@@ -200,6 +222,12 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: COLORS.subtext, marginTop: 4 },
   mapContainer: { height: 250 },
   map: { flex: 1 },
+  errorContainer: {
+    height: 250,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.background,
+  },
   listContainer: { flex: 1, backgroundColor: COLORS.background },
   listHeader: {
     flexDirection: 'row',
@@ -230,10 +258,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 4,
   },
-  artisanCardSelected: {
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-  },
+  artisanCardSelected: { borderWidth: 2, borderColor: COLORS.primary },
   artisanAvatar: {
     width: 52, height: 52, borderRadius: 26,
     backgroundColor: COLORS.background,

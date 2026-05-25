@@ -28,6 +28,7 @@ import { RouteProp } from '@react-navigation/native';
 import { auth, db } from '../../services/firebase';
 import { RootStackParamList } from '../../types';
 import { COLORS } from '../../constants';
+import { sendLocalNotification } from '../../services/notifications';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'ChatScreen'>;
@@ -77,19 +78,38 @@ export default function ChatScreen({ navigation, route }: Props) {
   };
 
   const subscribeToMessages = () => {
-    const messagesRef = collection(db, 'chats', chatId, 'messages');
-    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+  const messagesRef = collection(db, 'chats', chatId, 'messages');
+  const q = query(messagesRef, orderBy('createdAt', 'asc'));
+  let isFirstLoad = true;
 
-    return onSnapshot(q, snapshot => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Message[];
-      setMessages(data);
-      setLoading(false);
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-    });
-  };
+  return onSnapshot(q, snapshot => {
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Message[];
+
+    // Notify on new messages after first load
+    if (!isFirstLoad) {
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const msg = change.doc.data();
+          // Only notify if message is from the other person
+          if (msg.senderId !== currentUser?.uid) {
+            sendLocalNotification(
+              `New message from ${msg.senderName}`,
+              msg.text
+            );
+          }
+        }
+      });
+    }
+
+    isFirstLoad = false;
+    setMessages(data);
+    setLoading(false);
+    setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+  });
+};
 
   const handleSend = async () => {
     if (!inputText.trim() || sending) return;
@@ -341,7 +361,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    paddingBottom: 24,
+    paddingBottom: 40,
     backgroundColor: COLORS.white,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,

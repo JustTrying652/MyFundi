@@ -128,6 +128,11 @@ export default function SearchScreen() {
                </View>
               <View style={styles.artisanInfo}>
                 <Text style={styles.artisanName}>{artisan.name}</Text>
+                {artisan.verified == true && (
+                  <view style={styles.verifiedBadge}>
+                    <Text style={styles.verifiedText}>✅ Verified Fundi</Text>
+                  </view>
+                )}
                 <Text style={styles.artisanTrade}>{artisan.trade || 'Trade not set'}</Text>
                 <Text style={styles.artisanLocation}>
                   📍 {artisan.location?.address || 'Location not set'}
@@ -135,11 +140,6 @@ export default function SearchScreen() {
                 <View style={styles.ratingRow}>
                   <Text style={styles.rating}>⭐ {artisan.rating || '0.0'}</Text>
                   <Text style={styles.reviews}>({artisan.totalReviews || 0} reviews)</Text>
-                  {artisan.verified && (
-  <View style={styles.verifiedBadge}>
-    <Text style={styles.verifiedText}>✅ Verified</Text>
-  </View>
-)}
                   {artisan.available && (
                     <View style={styles.availableBadge}>
                       <Text style={styles.availableText}>Available</Text>

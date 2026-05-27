@@ -97,6 +97,9 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
             </View>
           )}
           <Text style={styles.name}>{artisan.name}</Text>
+          {artisan.verified && (
+            <text style={styles.verifiedBadge}>✅ Verified Fundi</text>
+          )}
           <Text style={styles.trade}>{artisan.trade}</Text>
           <View style={styles.statsRow}>
             <View style={styles.stat}>
@@ -182,6 +185,12 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
+  verifiedBadge: {
+  fontSize: 13,
+  color: COLORS.success,
+  fontWeight: '600',
+  marginTop: 4,
+},
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

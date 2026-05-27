@@ -28,6 +28,7 @@ interface User {
   phone: string;
   role: string;
   suspended?: boolean;
+  verified?: boolean;
   createdAt: any;
 }
 
@@ -117,7 +118,34 @@ export default function AdminUsersScreen({ navigation }: any) {
       ]
     );
   };
-
+  const handleVerify = async (user: User) => {
+  const action = user.verified ? 'Unverify' : 'Verify';
+  Alert.alert(
+    `${action} Fundi`,
+    `Are you sure you want to ${action.toLowerCase()} ${user.name}?`,
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: action,
+        onPress: async () => {
+          try {
+            await updateDoc(doc(db, 'artisans', user.uid), {
+              verified: !user.verified,
+            });
+            setUsers(prev =>
+              prev.map(u =>
+                u.uid === user.uid ? { ...u, verified: !u.verified } : u
+              )
+            );
+            Alert.alert('Success', `${user.name} has been ${action.toLowerCase()}ed.`);
+          } catch (error: any) {
+            Alert.alert('Error', error.message);
+          }
+        },
+      },
+    ]
+  );
+};
   const handleDelete = async (user: User) => {
     Alert.alert(
       'Delete User',
@@ -213,24 +241,27 @@ export default function AdminUsersScreen({ navigation }: any) {
                 </View>
                 <View style={styles.userInfo}>
                   <View style={styles.userNameRow}>
-                    <Text style={styles.userName}>{user.name}</Text>
-                    <View style={[
-                      styles.roleBadge,
-                      { backgroundColor: user.role === 'artisan' ? '#E8F8F0' : '#EBF5FB' }
-                    ]}>
-                      <Text style={[
-                        styles.roleText,
-                        { color: user.role === 'artisan' ? COLORS.success : '#3498DB' }
-                      ]}>
-                        {user.role === 'artisan' ? 'Fundi' : 'Customer'}
-                      </Text>
-                    </View>
-                    {user.suspended && (
-                      <View style={styles.suspendedBadge}>
-                        <Text style={styles.suspendedText}>Suspended</Text>
-                      </View>
-                    )}
-                  </View>
+  <Text style={styles.userName}>{user.name}</Text>
+  {user.verified && (
+    <Text style={styles.verifiedBadge}>✅ Verified</Text>
+  )}
+  <View style={[
+    styles.roleBadge,
+    { backgroundColor: user.role === 'artisan' ? '#E8F8F0' : '#EBF5FB' }
+  ]}>
+    <Text style={[
+      styles.roleText,
+      { color: user.role === 'artisan' ? COLORS.success : '#3498DB' }
+    ]}>
+      {user.role === 'artisan' ? 'Fundi' : 'Customer'}
+    </Text>
+  </View>
+  {user.suspended && (
+    <View style={styles.suspendedBadge}>
+      <Text style={styles.suspendedText}>Suspended</Text>
+    </View>
+  )}
+</View>
                   <Text style={styles.userEmail}>{user.email}</Text>
                   <Text style={styles.userPhone}>📞 {user.phone}</Text>
                 </View>
@@ -238,29 +269,45 @@ export default function AdminUsersScreen({ navigation }: any) {
 
               {/* Actions */}
               <View style={styles.actionsRow}>
-                <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    user.suspended ? styles.unsuspendButton : styles.suspendButton
-                  ]}
-                  onPress={() => handleSuspend(user)}
-                >
-                  <Text style={[
-                    styles.actionButtonText,
-                    { color: user.suspended ? COLORS.success : COLORS.pending }
-                  ]}>
-                    {user.suspended ? '✓ Unsuspend' : '⚠ Suspend'}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.deleteButton]}
-                  onPress={() => handleDelete(user)}
-                >
-                  <Text style={[styles.actionButtonText, { color: COLORS.danger }]}>
-                    🗑 Delete
-                  </Text>
-                </TouchableOpacity>
-              </View>
+  {user.role === 'artisan' && (
+    <TouchableOpacity
+      style={[
+        styles.actionButton,
+        user.verified ? styles.unverifyButton : styles.verifyButton
+      ]}
+      onPress={() => handleVerify(user)}
+    >
+      <Text style={[
+        styles.actionButtonText,
+        { color: user.verified ? COLORS.subtext : '#3498DB' }
+      ]}>
+        {user.verified ? '✓ Verified' : '🔍 Verify'}
+      </Text>
+    </TouchableOpacity>
+  )}
+  <TouchableOpacity
+    style={[
+      styles.actionButton,
+      user.suspended ? styles.unsuspendButton : styles.suspendButton
+    ]}
+    onPress={() => handleSuspend(user)}
+  >
+    <Text style={[
+      styles.actionButtonText,
+      { color: user.suspended ? COLORS.success : COLORS.pending }
+    ]}>
+      {user.suspended ? '✓ Unsuspend' : '⚠ Suspend'}
+    </Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+    style={[styles.actionButton, styles.deleteButton]}
+    onPress={() => handleDelete(user)}
+  >
+    <Text style={[styles.actionButtonText, { color: COLORS.danger }]}>
+      🗑 Delete
+    </Text>
+  </TouchableOpacity>
+</View>
             </View>
           ))}
         </ScrollView>
@@ -270,6 +317,9 @@ export default function AdminUsersScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
+  verifyButton: { borderColor: '#3498DB', backgroundColor: '#EBF5FB' },
+unverifyButton: { borderColor: COLORS.border, backgroundColor: COLORS.background },
+verifiedBadge: { fontSize: 12, color: COLORS.success, fontWeight: '600' },
   container: { flex: 1, backgroundColor: COLORS.background },
   header: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 12 },
   backText: { color: COLORS.primary, fontSize: 16, marginBottom: 8 },

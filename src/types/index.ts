@@ -25,6 +25,7 @@ export interface Artisan {
   rating: number;
   totalReviews: number;
   available: boolean;
+  verified?: boolean;
   createdAt: Date;
 }
 

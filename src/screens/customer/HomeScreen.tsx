@@ -148,6 +148,11 @@ export default function HomeScreen() {
                 <View style={styles.ratingRow}>
                   <Text style={styles.rating}>⭐ {artisan.rating || '0.0'}</Text>
                   <Text style={styles.reviews}>({artisan.totalReviews || 0} reviews)</Text>
+                  {artisan.verified && (
+  <View style={styles.verifiedBadge}>
+    <Text style={styles.verifiedText}>✅ Verified</Text>
+  </View>
+)}
                   {artisan.available && (
                     <View style={styles.availableBadge}>
                       <Text style={styles.availableText}>Available</Text>
@@ -164,6 +169,17 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  verifiedBadge: {
+  backgroundColor: '#E8F8F0',
+  paddingHorizontal: 8,
+  paddingVertical: 2,
+  borderRadius: 10,
+},
+verifiedText: {
+  fontSize: 11,
+  color: COLORS.success,
+  fontWeight: '600',
+},
   artisanAvatarImage: {
   width: 56,
   height: 56,

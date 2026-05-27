@@ -142,9 +142,9 @@ export default function HomeScreen() {
               <View style={styles.artisanInfo}>
                 <Text style={styles.artisanName}>{artisan.name}</Text>
                 {artisan.verified == true && (
-                  <view style={styles.verifiedBadge}>
+                  <View style={styles.verifiedBadge}>
                     <Text style={styles.verifiedText}>✅ Verified Fundi</Text>
-                  </view>
+                  </View>
                 )}
                 <Text style={styles.artisanTrade}>{artisan.trade || 'Trade not set'}</Text>
                 <Text style={styles.artisanLocation}>

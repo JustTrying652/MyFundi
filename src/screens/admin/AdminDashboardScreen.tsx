@@ -146,7 +146,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
             onPress={() => navigation.navigate('AdminBookings')}
           >
             <Text style={styles.actionEmoji}>📋</Text>
-            <Text style={styles.actionTitle}>View Bookings</Text>
+            <Text style={styles.actionTitle}>View </Text>
             <Text style={styles.actionSubtitle}>Monitor all platform bookings</Text>
           </TouchableOpacity>
         </View>

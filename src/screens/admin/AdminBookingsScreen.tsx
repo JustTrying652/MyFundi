@@ -207,7 +207,7 @@ export default function AdminBookingsScreen({ navigation }: any) {
                   style={styles.deleteButton}
                   onPress={() => handleDelete(booking)}
                 >
-                  <Text style={styles.deleteButtonText}>🗑 Delete Booking</Text>
+                  <Text style={styles.deleteButtonText}>🗑 Delete</Text>
                 </TouchableOpacity>
               </View>
             );

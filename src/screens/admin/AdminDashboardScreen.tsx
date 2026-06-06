@@ -147,7 +147,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
           >
             <Text style={styles.actionEmoji}>📋</Text>
             <Text style={styles.actionTitle}>View Bookings</Text>
-            <Text style={styles.actionSubtitle}>Monitor all platform bookings</Text>
+            <Text style={styles.actionSubtitle}>Monitor</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

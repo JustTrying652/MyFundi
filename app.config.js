@@ -1,5 +1,23 @@
 const fs = require('fs');
 
+// EAS injects file secrets as a path in the env variable
+const googleServicesPath = process.env.GOOGLE_SERVICES_JSON;
+if (googleServicesPath) {
+  try {
+    // If it's a file path (file type secret), copy it
+    if (fs.existsSync(googleServicesPath)) {
+      fs.copyFileSync(googleServicesPath, './google-services.json');
+      console.log('Copied google-services.json from:', googleServicesPath);
+    } else {
+      // If it's JSON content (string type secret), write it
+      fs.writeFileSync('./google-services.json', googleServicesPath);
+      console.log('Written google-services.json from env string');
+    }
+  } catch (e) {
+    console.error('Failed to handle google-services.json:', e);
+  }
+}
+
 module.exports = {
   expo: {
     name: "MyFundi",
@@ -19,6 +37,7 @@ module.exports = {
     android: {
       googleServicesFile: "./google-services.json",
       package: "com.ngata.MyFundi",
+      versionCode: 1,
       adaptiveIcon: {
         foregroundImage: "./icon.png",
         backgroundColor: "#2C3E50"
@@ -26,7 +45,7 @@ module.exports = {
       predictiveBackGestureEnabled: false,
       config: {
         googleMaps: {
-          apiKey: process.env.EXPO_PUBLIC_MAPS_API_KEY || ""
+          apiKey: process.env.MAPS_API_KEY || ""
         }
       }
     },

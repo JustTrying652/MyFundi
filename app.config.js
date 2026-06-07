@@ -1,10 +1,5 @@
 const fs = require('fs');
 
-// Write google-services.json from env variable during build
-if (process.env.GOOGLE_SERVICES_JSON) {
-  fs.writeFileSync('./google-services.json', process.env.GOOGLE_SERVICES_JSON);
-}
-
 module.exports = {
   expo: {
     name: "MyFundi",

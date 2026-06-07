@@ -49,7 +49,7 @@ export default function RegisterScreen({ navigation, route }: Props) {
   const timeout = setTimeout(() => {
     setLoading(false);
     Alert.alert('Timeout', 'Request timed out. Check your internet connection.');
-  }, 20000);
+  }, 40000);
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -93,9 +93,8 @@ export default function RegisterScreen({ navigation, route }: Props) {
     }
   } catch (error: any) {
     clearTimeout(timeout);
-    Alert.alert('Registration Failed', `${error.code}: ${error.message}`);
-  } finally {
     setLoading(false);
+    Alert.alert('Registration Failed', `${error.code}: ${error.message}`);
   }
 };
 

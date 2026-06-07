@@ -35,61 +35,69 @@ export default function RegisterScreen({ navigation, route }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!name || !email || !phone || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
+  if (!name || !email || !phone || !password) {
+    Alert.alert('Error', 'Please fill in all fields');
+    return;
+  }
+  if (password.length < 6) {
+    Alert.alert('Error', 'Password must be at least 6 characters');
+    return;
+  }
 
+  setLoading(true);
+
+  const timeout = setTimeout(() => {
     setLoading(false);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = userCredential.user.uid;
+    Alert.alert('Timeout', 'Request timed out. Check your internet connection.');
+  }, 20000);
 
-      // Save to users collection
-      await setDoc(doc(db, 'users', uid), {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
+
+    await setDoc(doc(db, 'users', uid), {
+      uid,
+      name,
+      email,
+      phone,
+      role,
+      createdAt: new Date(),
+    });
+
+    if (isArtisan) {
+      await setDoc(doc(db, 'artisans', uid), {
         uid,
         name,
-        email,
         phone,
-        role,
+        trade: '',
+        bio: '',
+        location: { latitude: 0, longitude: 0, address: '' },
+        photos: [],
+        profilePhoto: '',
+        rating: 0,
+        totalReviews: 0,
+        available: true,
+        verified: false,
         createdAt: new Date(),
       });
-
-      // If artisan, create artisan profile too
-      if (isArtisan) {
-        await setDoc(doc(db, 'artisans', uid), {
-          uid,
-          name,
-          phone,
-          trade: '',
-          bio: '',
-          location: { latitude: 0, longitude: 0, address: '' },
-          photos: [],
-          rating: 0,
-          totalReviews: 0,
-          available: true,
-          createdAt: new Date(),
-        });
-      }
-
-      // Register for push notifications
-      await registerForPushNotifications(uid);
-
-      // Navigate based on role
-      if (isArtisan) {
-        navigation.reset({ index: 0, routes: [{ name: 'ArtisanTabs' }] });
-      } else {
-        navigation.reset({ index: 0, routes: [{ name: 'CustomerTabs' }] });
-      }
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      Alert.alert('Registration Failed', `${error.code}: ${error.message}`);
     }
-  };
+
+    registerForPushNotifications(uid);
+    clearTimeout(timeout);
+
+    // Navigate directly to the right tab
+    if (isArtisan) {
+      navigation.reset({ index: 0, routes: [{ name: 'ArtisanTabs' }] });
+    } else {
+      navigation.reset({ index: 0, routes: [{ name: 'CustomerTabs' }] });
+    }
+  } catch (error: any) {
+    clearTimeout(timeout);
+    Alert.alert('Registration Failed', `${error.code}: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>

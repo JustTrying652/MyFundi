@@ -128,7 +128,7 @@ export default function LoginScreen({ navigation }: Props) {
             style={[styles.outlineButton, { marginTop: 12 }]}
             onPress={() => navigation.navigate('Register', { role: 'artisan' })}
           >
-            <Text style={styles.outlineButtonText}>Register as Fundi</Text>
+            <Text style={styles.outlineButtonText}></Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

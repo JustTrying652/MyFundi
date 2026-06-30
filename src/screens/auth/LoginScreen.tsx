@@ -72,7 +72,7 @@ export default function LoginScreen({ navigation }: Props) {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.logo}>🔧 MyFundi</Text>
-          <Text style={styles.title}>Welcome back</Text>
+          <Text style={styles.title}>Welcome </Text>
           <Text style={styles.subtitle}>Sign in to your account</Text>
         </View>
 

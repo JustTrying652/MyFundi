@@ -140,7 +140,7 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
         {/* Work Photos */}
         {artisan.photos && artisan.photos.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Work </Text>
+            <Text style={styles.sectionTitle}>Work Photos</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {artisan.photos.map((photo, index) => (
                 <Image key={index} source={{ uri: photo }} style={styles.workPhoto} />

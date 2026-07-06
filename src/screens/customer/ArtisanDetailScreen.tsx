@@ -98,7 +98,7 @@ export default function ArtisanDetailScreen({ navigation, route }: Props) {
           )}
           <Text style={styles.name}>{artisan.name}</Text>
           {artisan.verified == true && (
-            <Text style={styles.verifiedBadge}>✅ Verified Fundi</Text>
+            <Text style={styles.verifiedBadge}>✅ Verified </Text>
           )}
           <Text style={styles.trade}>{artisan.trade}</Text>
           <View style={styles.statsRow}>

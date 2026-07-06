@@ -78,7 +78,7 @@ export default function BookingScreen({ navigation, route }: Props) {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Book a Fundi</Text>
+          <Text style={styles.title}>Book a </Text>
           <Text style={styles.subtitle}>Fill in the details for your job request</Text>
         </View>
 
